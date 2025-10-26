@@ -1,0 +1,37 @@
+api:
+  host: "https://proxy.opinion.trade:8443"
+  api_key: "YOUR_API_KEY"
+  chain_id: 56
+  rpc_url: "https://bsc-dataseed.binance.org"
+  private_key: "0x..."
+  multi_sig_addr: "0x..."
+
+strategy:
+  top_n_tokens: 50
+  min_liquidity: 10.0
+  max_spread: 0.1
+  min_price: 0.05
+  max_price: 0.95
+  order_quote_amount: 20.0
+
+risk:
+  max_total_position: 1000.0
+  max_position_per_market: 200.0
+  min_available_balance: 20.0
+  duplicate_order_cooldown: 60
+  sell_order_threshold: 5.0
+
+scheduler:
+  poll_interval_seconds: 15.0
+  order_refresh_interval: 60.0
+
+logging:
+  level: "INFO"
+  log_to_console: true
+  log_to_file: false
+  log_file: null
+  json_format: false
+
+monitoring:
+  enable_metrics: false
+  metrics_backend: null
