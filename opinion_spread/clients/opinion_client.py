@@ -12,6 +12,7 @@ from opinion_clob_sdk.chain.py_order_utils.model.order_type import LIMIT_ORDER
 from opinion_clob_sdk.chain.py_order_utils.model.sides import OrderSide
 
 from ..config.schema import APIConfig
+from ._response_utils import extract_data, extract_list, normalize
 
 
 @dataclass
@@ -37,9 +38,7 @@ class OpinionClient:
         page = 1
         while True:
             response = self._client.get_markets(page=page, limit=limit)
-            if response.errno != 0:
-                raise RuntimeError(f"Failed to fetch markets: {response.errmsg}")
-            markets = response.result.list or []
+            markets = extract_list(response)
             if not markets:
                 break
             for market in markets:
@@ -51,37 +50,29 @@ class OpinionClient:
 
     def fetch_orderbook(self, token_id: str) -> Dict[str, Any]:
         response = self._client.get_orderbook(token_id=token_id)
-        if response.errno != 0:
-            raise RuntimeError(f"Failed to fetch orderbook for {token_id}: {response.errmsg}")
-        return response.result.data or {}
+        return extract_data(response)
 
     def fetch_latest_price(self, token_id: str) -> Optional[Decimal]:
         response = self._client.get_latest_price(token_id=token_id)
         if response.errno != 0:
             return None
-        data = response.result.data
-        if not data:
+        data = normalize(response.result.data)
+        if not isinstance(data, dict):
             return None
         price = data.get("price")
         return Decimal(str(price)) if price is not None else None
 
     def fetch_positions(self, limit: int = 100) -> List[Dict[str, Any]]:
         response = self._client.get_my_positions(limit=limit)
-        if response.errno != 0:
-            raise RuntimeError(f"Failed to fetch positions: {response.errmsg}")
-        return response.result.list or []
+        return extract_list(response)
 
     def fetch_orders(self, limit: int = 100) -> List[Dict[str, Any]]:
         response = self._client.get_my_orders(limit=limit, status="open")
-        if response.errno != 0:
-            raise RuntimeError(f"Failed to fetch orders: {response.errmsg}")
-        return response.result.list or []
+        return extract_list(response)
 
     def fetch_balances(self) -> Dict[str, Any]:
         response = self._client.get_my_balances()
-        if response.errno != 0:
-            raise RuntimeError(f"Failed to fetch balances: {response.errmsg}")
-        return response.result.data or {}
+        return extract_data(response)
 
     def place_limit_order(
         self,
